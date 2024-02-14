@@ -1,10 +1,11 @@
 import argparse
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import logging
 import yaml
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 def load_configuration(config_path):
     """Load configuration from YAML file."""
@@ -15,13 +16,25 @@ def load_configuration(config_path):
         e.add_note("An error occurred while loading the configuration.")
         raise e
 
-# creating the bins for the graph
 def preprocess_data(df):
     """Preprocess the dataset."""
     df.columns = map(str.lower, df.columns)
     df['storeys_group'] = pd.cut(df['confirmed_storeys'], bins=[float('-inf'), 24, float('inf')],
                                 labels=['less than 25', '25 or more'], right=False)
     return df
+
+def load_and_preprocess_data(dataset_path):
+    """Load and preprocess the dataset."""
+    apartment = pd.read_csv(dataset_path)
+    return preprocess_data(apartment)
+
+def setup_logging(verbose):
+    """Set up logging based on verbosity."""
+    logging_level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(
+        level=logging_level,
+        handlers=[logging.StreamHandler(), logging.FileHandler('my_python_analysis.log')],
+    )
 
 def main():
     # Parse command-line arguments
@@ -30,14 +43,8 @@ def main():
     parser.add_argument('--verbose', '-v', action='store_true', help='Print verbose logs')
     args = parser.parse_args()
 
-    # Determine logging level based on arguments
-    logging_level = logging.DEBUG if args.verbose else logging.INFO
-
-    # Initialize logging module
-    logging.basicConfig(
-        level=logging_level,
-        handlers=[logging.StreamHandler(), logging.FileHandler('my_python_analysis.log')],
-    )
+    # Set up logging
+    setup_logging(args.verbose)
 
     # Get the absolute path to the configuration file
     config_path = os.path.abspath(args.config)
@@ -48,11 +55,8 @@ def main():
     # Assuming dataset path is included in the configuration file
     dataset_path = os.path.abspath(config_data['dataset_path'])
     
-    # Load dataset
-    apartment = pd.read_csv(dataset_path)
-
-    # Preprocess data
-    apartment = preprocess_data(apartment)
+    # Load and preprocess data
+    apartment = load_and_preprocess_data(dataset_path)
 
     # Grouped bar chart
     plt.figure(figsize=(14, 8))
