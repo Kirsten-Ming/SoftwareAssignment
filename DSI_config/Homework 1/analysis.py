@@ -11,7 +11,7 @@ parser.add_argument('--config', type=str, help='Path to the configuration file',
 args = parser.parse_args()
 
 # Load the dataset
-apartment = pd.read_csv(args.input_csv) 
+apartment = pd.read_csv(args.input_csv)
 print(apartment)
 
 # Renaming one or more columns 
@@ -25,15 +25,15 @@ apartment['storeys_group'] = pd.cut(apartment['confirmed_storeys'], bins=[float(
 
 # Grouped bar chart for 'score' by 'wardname' and 'storeys_group' using seaborn
 plt.figure(figsize=(14, 8))
-sns.barplot(data=apartment, x='wardname', y='score', hue='storeys_group')
+sns.barplot(data=apartment, x=args.config['group_col'], y=args.config['aggregation_col'], hue=args.config['color_col'])
 
 # Adding labels, title, and legend
-plt.xlabel('Ward Name')
-plt.ylabel('Apartment Score')
-plt.title('Apartment Score by Ward Name and Storeys Group')
-plt.xticks(rotation=45, ha='right')
-plt.legend(title='Storeys Group')
+plt.xlabel(args.config['x_label'])
+plt.ylabel(args.config['y_label'])
+plt.title(args.config['plot_title'])
+plt.xticks(rotation=args.config['x_ticks_rotation'], ha='right')
+plt.legend(title=args.config['legend_title'])
 
 # Save figures
-plt.savefig('Apartment.png')
+plt.savefig(args.config['output_file'])
 
